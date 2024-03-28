@@ -26,7 +26,7 @@ static WeatherMap ParseInput(string inputPath)
 
         var iSemi = line.IndexOf(';');
         var station = line[..iSemi];
-        var temp = float.Parse(line.AsSpan(iSemi + 1));
+        var temp = ParseTemperature(line.AsSpan(iSemi + 1));
 
         map.Update(station, temp);
     }
@@ -34,37 +34,79 @@ static WeatherMap ParseInput(string inputPath)
     return map;
 }
 
+// Input is guaranteed to be -99.9..99.9 map to -999..999
+static short ParseTemperature(ReadOnlySpan<char> input)
+{
+    int index = 0;
+    bool isNegative = false;
+    if (input[0] == '-')
+    {
+        isNegative = true;
+        index++;
+    }
+
+    var sign = isNegative ? -1 : 1;
+
+    var msd = input[index++] - '0';
+
+    // Single digit without decimal
+    if (index == input.Length) return (short)(sign * 10 * msd);
+
+    // Single digit with decimal
+    if (input[index] == '.')
+    {
+        index++;
+        var ones = input[index] - '0';
+        return (short)(sign * (10 * msd + ones));
+    }
+
+    var nsd = input[index++] - '0';
+
+    // Two digits without decimal
+    if (index == input.Length) return (short)(sign * (100 * msd + 10 * nsd));
+
+    // Two digits with decimal
+    {
+        index++;
+        var ones = input[index] - '0';
+        return (short)(sign * (100 * msd + 10 * nsd + ones));
+    }
+}
+
 struct WeatherData
 {
-    private float _min;
-    private float _max;
-    private float _mean;
+    private short _min;
+    private short _max;
+    private long _total;
     private long _count;
 
-    public void Init(float initialValue)
+    public void Init(short initialValue)
     {
-        _min = _max = _mean = initialValue;
+        _min = _max = initialValue;
+        _total = initialValue;
         _count = 1;
     }
 
-    public void Update(float value)
+    public void Update(short value)
     {
         if (value < _min) _min = value;
         if (value > _max) _max = value;
         _count++;
-
-        var lastMean = _mean;
-        _mean = lastMean + ((value - lastMean) / _count);
+        _total += value;
     }
 
-    public override string ToString() => $"{_min:F1}/{_mean:F1}/{_max:F1}";
+    public override string ToString()
+    {
+        var mean = _total / _count;
+        return $"{_min / 10}.{Math.Abs(_min) % 10}/{mean / 10}.{Math.Abs(mean) % 10}/{_max / 10}.{Math.Abs(_max) % 10}";
+    }
 }
 
 class WeatherMap
 {
     private readonly Dictionary<string, WeatherData> _data = [];
 
-    public void Update(string station, float temp)
+    public void Update(string station, short temp)
     {
         ref var data = ref CollectionsMarshal.GetValueRefOrAddDefault(_data, station, out var exists);
         if (exists)

@@ -2,7 +2,7 @@
 
 Okay, let's do this.
 
-## Round 1 - Single Thread
+## Round 1
 
 |Time|Command|
 |---|---|
@@ -14,3 +14,15 @@ Okay, let's do this.
 
 All I can say is wow. The difference between debug and release Rust is massive. Rust is outperforming C# at its best, but just barely.
 
+## Route 2 - Optimize Temperature Parsing
+
+Treat the temperatures as 16 bit signed integers and parse them by hand. Switch from rolling average to accumulating the total temperature in a 64 bit integer and averaging at the end.
+
+Going forward, I'm only going to look at Release builds. Also skipping AoT because it didn't make a difference.
+
+|Time|Command|
+|---|---|
+|7.327s|`dotnet run -c Release --project OneBee -- ../data/data_100m.txt`|
+|8.661s|`cargo run -r -- ../data/data_100m.txt`|
+
+.NET has overtaken Rust. Neat.
