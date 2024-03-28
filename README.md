@@ -14,7 +14,7 @@ Okay, let's do this.
 
 All I can say is wow. The difference between debug and release Rust is massive. Rust is outperforming C# at its best, but just barely.
 
-## Route 2 - Optimize Temperature Parsing
+## Round 2 - Optimize Temperature Parsing
 
 Treat the temperatures as 16 bit signed integers and parse them by hand. Switch from rolling average to accumulating the total temperature in a 64 bit integer and averaging at the end.
 
@@ -26,3 +26,11 @@ Going forward, I'm only going to look at Release builds. Also skipping AoT becau
 |8.661s|`cargo run -r -- ../data/data_100m.txt`|
 
 .NET has overtaken Rust. Neat.
+
+## Round 3 - UTF8 Numeric Parsing
+
+Copy paste some code to avoid some of the string conversions. Still allocating a string for each lookup - not great
+
+|Time|Command|
+|---|---|
+|6.762s|`dotnet run -c Release --project OneBee -- ../data/data_100m.txt`|
