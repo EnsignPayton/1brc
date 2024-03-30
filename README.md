@@ -34,3 +34,11 @@ Copy paste some code to avoid some of the string conversions. Still allocating a
 |Time|Command|
 |---|---|
 |6.762s|`dotnet run -c Release --project OneBee -- ../data/data_100m.txt`|
+
+## Round 4 - Stream Parser Fix
+
+Remove my hacky fix and do a more legitimate fix. Not sure if it improved perf or if that's just margin of error.
+
+|Time|Command|
+|---|---|
+|6.586s|`dotnet run -c Release --project OneBee -- ../data/data_100m.txt`|

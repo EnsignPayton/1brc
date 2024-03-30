@@ -56,12 +56,13 @@ internal sealed class Utf8StreamReader(string path) : IDisposable
                 return _positionBegin != _positionEnd;
             }
 
+            var scanFrom = examined0 > 0 ? examined0 - 1 : examined0;
             var index = IndexOfNewLine(
-                _inputBuffer.AsSpan(examined0, _positionEnd - examined0), out var examined1);
+                _inputBuffer.AsSpan(scanFrom, _positionEnd - scanFrom), out var examined1);
             if (index != -1)
             {
-                _lastNewLinePosition = examined0 + index;
-                _lastExaminedPosition = examined0 + examined1;
+                _lastNewLinePosition = scanFrom + index;
+                _lastExaminedPosition = scanFrom + examined1;
                 return true;
             }
 
@@ -87,7 +88,6 @@ internal sealed class Utf8StreamReader(string path) : IDisposable
         if (_lastNewLinePosition >= 0)
         {
             line = _inputBuffer.AsSpan(_positionBegin, _lastNewLinePosition - _positionBegin);
-            if (line[^1] is (byte)'\r' or (byte)'\n') line = line[..^1];
             _positionBegin = _lastExaminedPosition + 1;
             _lastNewLinePosition = _lastExaminedPosition = -1;
             return true;
@@ -100,7 +100,6 @@ internal sealed class Utf8StreamReader(string path) : IDisposable
             if (_endOfStream && _positionBegin != _positionEnd)
             {
                 line = _inputBuffer.AsSpan(_positionBegin, _positionEnd - _positionBegin);
-                if (line[^1] is (byte)'\r' or (byte)'\n') line = line[..^1];
                 _positionBegin = _positionEnd;
                 return true;
             }
@@ -111,7 +110,6 @@ internal sealed class Utf8StreamReader(string path) : IDisposable
         }
 
         line = _inputBuffer.AsSpan(_positionBegin, index);
-        if (line[^1] is (byte)'\r' or (byte)'\n') line = line[..^1];
         _positionBegin = _positionBegin + examined + 1;
         _lastNewLinePosition = _lastExaminedPosition = -1;
         return true;
